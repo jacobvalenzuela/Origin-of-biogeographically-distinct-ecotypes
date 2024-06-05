@@ -63,7 +63,7 @@ Enrich_df<-rbind(cbind(subset(DvH_long_df_zscore, DvH_long_df_zscore$Gene_ID %in
 cbind(subset(Mmp_long_df_zscore, Mmp_long_df_zscore$Gene_ID %in% Hydrogenases_HA_mmp$GeneID), data.frame("Enrichment" = "Hydrogenases (Mmp)", "Org" = "Mmp")),
 cbind(subset(DvH_long_df_zscore, DvH_long_df_zscore$Gene_ID %in% Hydrogenases_DvH$GeneID), data.frame("Enrichment" = "Hydrogenases (DvH)", "Org" = "DvH")),
 cbind(subset(Mmp_long_df_zscore, Mmp_long_df_zscore$Gene_ID %in% Hydrogenases_LA_mmp$GeneID), data.frame("Enrichment" = "Low Affinity Hydrogenase (Mmp)", "Org" = "Mmp")),
-cbind(subset(DvH_long_df_zscore, DvH_long_df_zscore$Gene_ID %in% Lactate_transport$GeneID), data.frame("Enrichment" = "Lactate Permeases", "Org" = "Mmp")))
+cbind(subset(DvH_long_df_zscore, DvH_long_df_zscore$Gene_ID %in% Lactate_transport$GeneID), data.frame("Enrichment" = "Lactate Permeases", "Org" = "DvH")))
 Enrich_df$Enrichment<-factor(Enrich_df$Enrichment, levels = c("Lactate Permeases","Flagella", "Hydrogenases (DvH)", "Hydrogenases (Mmp)", "Low Affinity Hydrogenase (Mmp)" ))
 
 pos.d<-position_dodge(.6)
@@ -100,9 +100,16 @@ for (i in stripr) {
   g$grobs[[i]]$grobs[[1]]$children[[j]]$gp$fill <- fills[k]
   k <- k+1
 }
-pdf("./Final_Plots/SynCom_Enrich_Zscore.pdf", width = 2.25, height = 6.6)
+pdf("./Final_Plots/SynCom_Enrich_Zscore_2.pdf", width = 2.25, height = 6.6)
 grid::grid.draw(g)
 dev.off()
+
+summs_emrichment<-Enrich_df %>%
+  group_by(Enrichment) %>%
+  summarise(across(c(Gene_ID),
+                   list("n" = length))) 
+summs_emrichment$Gene_ID_n<-summs_emrichment$Gene_ID_n/12
+summs_emrichment
 write.csv(Enrich_df, "./Source_Data/Figure_3C.csv")
 #######
 ### build metadata data frame
@@ -306,7 +313,7 @@ Mmp_flaB_cts$Day<-gsub("5-13","6", Mmp_flaB_cts$Day)
 Day_Range<-c(3:6)
 flab_last_days<- t.test(Mmp_flaB_cts$counts[Mmp_flaB_cts$Phase == "P" & Mmp_flaB_cts$Day %in% Day_Range],
                         Mmp_flaB_cts$counts[Mmp_flaB_cts$Phase == "S" & Mmp_flaB_cts$Day %in% Day_Range],
-                          var.equal = TRUE)
+                          var.equal = TRUE )
 flab_last_days$p.value
 flab_last_day_FC<-log2(mean(Mmp_flaB_cts$counts[Mmp_flaB_cts$Phase == "P" & Mmp_flaB_cts$Day %in% Day_Range])/
        mean(Mmp_flaB_cts$counts[Mmp_flaB_cts$Phase == "S" & Mmp_flaB_cts$Day %in% Day_Range]))
